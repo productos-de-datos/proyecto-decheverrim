@@ -7,40 +7,26 @@ def train_daily_model():
 
     """
     import pandas as pd
-    import numpy as np
     import pickle
+    import numpy as np
+    from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import train_test_split
-    from sklearn.linear_model import ElasticNet
-    from sklearn.model_selection import GridSearchCV
- 
-    df = pd.read_csv("data_lake/business/features/precios_diarios.csv", sep=",")
-    df["fecha"] = pd.to_datetime(df["fecha"]).dt.strftime('%Y%m%d')
-    y = df["precio"]
-    x = df.copy()
-    x.pop("precio")
+    from sklearn.metrics import mean_squared_error
+    from sklearn.ensemble import RandomForestRegressor
 
-    x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.25,random_state=123456)
+    daily_prices = pd.read_csv("data_lake/business/features/precios_diarios.csv", encoding = 'utf-8', sep=',')
 
-    estimator = GridSearchCV(
-        estimator=ElasticNet(
-            random_state=12345,
-        ),
-        param_grid={
-            "alpha": np.linspace(0.05, 0.5, 10),
-            "l1_ratio": np.linspace(0.05, 0.5, 10),
-        },
-        cv=5,
-        refit=True,
-        verbose=1,
-        return_train_score=False,
-    )
-    estimator.fit(x_train,y_train)
-    estimator =estimator.best_estimator_
+    daily_prices["fecha"] = pd.to_datetime(daily_prices["fecha"]).dt.strftime('%Y%m%d')
+    X_fecha = np.array(daily_prices['fecha']).reshape(-1,1)
 
-    with open("proyecto-decheverrim/src/models/precios_diarios.pickle","wb") as file:
-        estimator = pickle.dump(estimator,file)
+    y_precio = np.array(daily_prices['precio']).reshape(-1,1)
 
+    X_train, X_test, y_train, y_test = train_test_split(X_fecha, y_precio, test_size=0.3, random_state=123456)
 
+    clf = RandomForestRegressor(n_estimators=150, max_features='sqrt', n_jobs=-1, oob_score = True, random_state = 123456)
+    clf.fit(X_train,y_train)
+
+    pickle.dump(clf, open('src/models/precios_diarios.pickle', 'wb'))
 
 
 
