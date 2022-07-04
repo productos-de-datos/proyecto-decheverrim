@@ -2,46 +2,54 @@
 Predict electricity prices according to days
 
 """
-
-import os
-import math
-import joblib
 import pandas as pd
+import pickle
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import RandomForestRegressor
+
 def make_forecasts():
     """Construya los pronosticos con el modelo entrenado final.
-
     Cree el archivo data_lake/business/forecasts/precios-diarios.csv. Este
     archivo contiene tres columnas:
-
     * La fecha.
-
     * El precio promedio real de la electricidad.
-
     * El pronóstico del precio promedio real.
-
-
     """
-    df_feature_train = pd.read_csv('./src/models/dataToForecast.csv')
-    df_prices = df_feature_train.copy()
-    df_feature_train  = df_feature_train.drop(columns = ['Unnamed: 0', 'y'])
+    
 
-    parent_dir = "src/models/precios-diarios.pkl"
-    cwd = os.getcwd()
-    path_parent_dir = os.path.join(cwd, parent_dir)
-    model = joblib.load(path_parent_dir)
-    data_result = model.predict(df_feature_train)
-    df_feature_train["precio_promedio_pronostico"] = data_result
-    df_feature_train = df_feature_train.drop(columns = ['tipo_dia','festivo', 'fin_semana'])
-    df_feature_train["fecha"] = df_feature_train.apply(lambda x : str(math.floor(x.ano)) + "-" + str(add_digit(x.mes)) + "-" + str(add_digit(x.dia)), axis=1)
-    df_feature_train = df_feature_train.drop(columns = ['ano','mes', 'dia'])
-    df_feature_train["precio_promedio_real"] = df_prices["y"]
-    df_feature_train = df_feature_train[["fecha", "precio_promedio_real", "precio_promedio_pronostico"]]
-    df_feature_train.to_csv('./data_lake/business/forecasts/precios-diarios.csv', index=False)
+    # Lea el archivo `precios-diarios` y asignelo al DataFrame `df`
+    df = pd.read_csv("data_lake/business/features/precios_diarios.csv", encoding = 'utf-8', sep=',')
 
-def add_digit(data):
-    """ agrega ceros a la izquierda en caso de tener un solo digito
-    """
-    return  '0' + str(math.floor(data)) if len(str(math.floor(data))) < 2 else str(math.floor(data))
+    # Asigne a la variable los valores de la columna `fecha`
+    df["fecha"] = pd.to_datetime(df["fecha"]).dt.strftime('%Y%m%d')
+    X_fecha = np.array(df['fecha']).reshape(-1,1)
+
+    # Asigne a la variable los valores de la columna `precio`
+    y_precio = np.array(df['precio']).reshape(-1,1)
+
+    # Divida los datos de entrenamiento y prueba. La semilla del generador de números
+    # aleatorios es 123456. El tamaño de la muestra de entrenamiento es del 80%
+    (X_train, X_test, y_train, y_test,) = train_test_split(X_fecha, y_precio, test_size=0.3, random_state=123456,)
+
+    # Cree una instancia del modelo de regresión lineal
+    clf = RandomForestRegressor(n_estimators=150, max_features='sqrt', n_jobs=-1, oob_score = True, random_state = 123456)
+    
+    # Entrene el clasificador usando X_train y y_train
+    clf.fit(X_train,y_train)
+
+    #Realiza el Forecast 
+    pickled_model = pickle.load(open('proyecto-decheverrim/src/models/precios-diarios.pickle', 'rb'))
+    ypred=pickled_model.predict(X_test)
+
+    X_test=pd.DataFrame(X_test, columns = ['fecha'])
+    y_test=pd.DataFrame(y_test, columns = ['precio'])
+    ypred=pd.DataFrame(ypred, columns = ['precio_pronostico'])
+
+    dtfinal=pd.concat([X_test,y_test,ypred], axis=1)
+    dtfinal.to_csv("data_lake/business/forecasts/precios-diarios.csv",index=None, header=True)
 
 
 if __name__ == "__main__":
