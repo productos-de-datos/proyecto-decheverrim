@@ -5,7 +5,7 @@ Train the model for forecasting
 
 import pandas as pd
 import pickle
-import joblib
+
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
@@ -34,7 +34,7 @@ def train_daily_model():
     
     clf.fit(X_train,y_train)
 
-    joblib.dump(clf, 'src/models/precios-diarios.pkl')
+    pickle.dump(clf, open('src/models/precios-diarios.pkl',"wb"))
 
 
 if __name__ == "__main__":
