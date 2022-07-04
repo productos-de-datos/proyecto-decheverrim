@@ -13,6 +13,7 @@ En luigi llame las funciones que ya creo.
 """
 
 import luigi
+from create_data_lake import create_data_lake
 from ingest_data import ingest_data
 from transform_data import transform_data
 from clean_data import clean_data
@@ -31,7 +32,7 @@ class CreateStructure(luigi.Task):
 
 class IngestData(luigi.Task):
     """
-    Run the task to retrieve data from an external file
+    Ejecuta la tarea de recuperar la data desde un archivo externo
     """
     def output(self):
         return []
@@ -41,7 +42,8 @@ class IngestData(luigi.Task):
 
 class TransformData(luigi.Task):
     """
-    Executes the task of transforming the data and consolidating it into a single file
+    Ejecuta la tarea de transformar la data
+    y consolidarla en un unico archivo
     """
     def output(self):
         return []
@@ -51,7 +53,8 @@ class TransformData(luigi.Task):
 
 class CleanData(luigi.Task):
     """
-    Executes the task to clean the data
+    Ejecuta la tarea de limpiar la data y
+    dar una estrucutra adecuada
     """
     def output(self):
         return []
@@ -61,8 +64,7 @@ class CleanData(luigi.Task):
 
 class ComputeDailyPrices(luigi.Task):
     """
-    Executes the task of consolidating prices daily
-
+    Ejecuta la tarea de consolidar los precios a nivel diario
     """
     def output(self):
         return []
@@ -72,7 +74,7 @@ class ComputeDailyPrices(luigi.Task):
 
 class ComputeMonthlyPrices(luigi.Task):
     """
-    Executes the task of consolidating prices monthly
+    Ejecuta la tarea de consolidar los precios a nivel mensual
     """
     def output(self):
         return []
@@ -83,10 +85,9 @@ class ComputeMonthlyPrices(luigi.Task):
 
 def pipeline():
     """
-    Call pipeline
+        llama al pipeline
     """
-    luigi.build([CreateStructure(),IngestData(), TransformData(), CleanData(), ComputeDailyPrices(), ComputeMonthlyPrices() ],  local_scheduler=True)
-
+    luigi.build([CreateStructure(), IngestData(), TransformData(), CleanData(), ComputeDailyPrices(), ComputeMonthlyPrices() ],  local_scheduler=True)
 
 if __name__ == "__main__":
     import doctest
