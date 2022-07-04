@@ -2,46 +2,42 @@
 Data transformation module in columns necessary for analysis
 
 """
-import sys
-import subprocess
-import pandas as pd
-
-
 def transform_data():
+    
     """Transforme los archivos xls a csv.
+
     Transforme los archivos data_lake/landing/*.xls a data_lake/raw/*.csv. Hay
     un archivo CSV por cada archivo XLS en la capa landing. Cada archivo CSV
     tiene como columnas la fecha en formato YYYY-MM-DD y las horas H00, ...,
     H23.
+
     """
+    import pandas as pd
+    
+    for num in range(1995, 2022):        
+        if num in range(1995, 2000):
+            data_csv = pd.read_excel('data_lake/landing/{}.xlsx'.format(num), header=3)
+            data_csv = data_csv.iloc[:, 0:25]
+            data_csv.columns = ['Fecha', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10','11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']       
+            data_csv.to_csv('data_lake/raw/{}.csv'.format(num),index=None)
+        elif(num in range(2000, 2016)):
+            data_csv = pd.read_excel('data_lake/landing/{}.xlsx'.format(num), header=2)
+            data_csv = data_csv.iloc[:, 0:25]
+            data_csv.columns = ['Fecha', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10','11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']             
+            data_csv.to_csv('data_lake/raw/{}.csv'.format(num),index=None)
+        elif(num in range(2016, 2018)):
+            data_csv = pd.read_excel('data_lake/landing/{}.xls'.format(num), header=2)
+            data_csv = data_csv.iloc[:, 0:25]
+            data_csv.columns = ['Fecha', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10','11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']             
+            data_csv.to_csv('data_lake/raw/{}.csv'.format(num), index=None)
+        else:
+            data_csv = pd.read_excel('data_lake/landing/{}.xlsx'.format(num), header=0)
+            data_csv = data_csv.iloc[:, 0:25]
+            data_csv.columns = ['Fecha', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10','11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']             
+            data_csv.to_csv('data_lake/raw/{}.csv'.format(num), index=None)
+    return
+    raise NotImplementedError("Implementar esta función")
 
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'openpyxl'])
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'xlrd'])
-    number_skips = {
-        1995: 3, 1996: 3, 1997: 3, 1998: 3, 1999: 3, 2000: 2,
-        2001: 2, 2002: 2, 2003: 2, 2004: 2, 2005: 2, 2006: 2,
-        2007: 2, 2008: 2, 2009: 2, 2010: 2, 2011: 2, 2012: 2,
-        2013: 2, 2014: 2, 2015: 2, 2016: 2, 2017: 2, 2018: 0,
-        2019: 0, 2020: 0, 2021: 0, 2022: 0
-    }
-
-    for year in range(1995, 2022):
-        extention = '.xlsx' if year not in (2016, 2017) else '.xls'
-        route_try = True
-        try:
-            read_file = pd.read_excel(
-                "./data_lake/landing/" + str(year) + extention, skiprows=number_skips[year])
-        except FileNotFoundError:
-            route_try = False
-            read_file = pd.read_excel(
-                "../../data_lake/landing/" + str(year) + extention, skiprows=number_skips[year])
-        read_file = read_file.loc[:, read_file.columns.notna()]
-        if 'Version' in read_file.columns:
-            read_file = read_file.drop(columns=['Version'])
-        if 'Unnamed: 26' in read_file.columns:
-            read_file = read_file.drop(columns=['Unnamed: 26'])
-        route = "./data_lake/raw/" if route_try else "../../data_lake/raw/"
-        read_file.to_csv(route + str(year) + ".csv", index=False)
 
 if __name__ == "__main__":
     import doctest

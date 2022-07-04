@@ -14,10 +14,20 @@ def make_daily_prices_plot():
     """
     import pandas as pd
     import matplotlib.pyplot as plt
-    Dialy_prices = pd.read_csv("./data_lake/business/precios-diarios.csv")
-    plt.plot(Dialy_prices["fecha"], Dialy_prices["precio"])
-    plt.savefig('./data_lake/business/reports/figures/daily_prices.png')
 
+    precios_diarios = pd.read_csv(r'data_lake/business/precios-diarios.csv', sep=',', header=0, index_col=None)
+    precios_diarios['fecha'] = pd.to_datetime(precios_diarios["fecha"])
+    x = precios_diarios.fecha
+    y = precios_diarios.precio
+    plt.figure(figsize=(20, 10))
+    plt.plot(x, y, 'g')
+    plt.title('Promedio de Precios Diarios')
+    plt.xlabel('Fecha')
+    plt.ylabel('Precio')
+    plt.xticks(rotation='vertical')
+    plt.savefig("data_lake/business/reports/figures/daily_prices.png")
+
+    #raise NotImplementedError("Implementar esta función")
 
 
 if __name__ == "__main__":
@@ -25,3 +35,4 @@ if __name__ == "__main__":
     make_daily_prices_plot()
 
     doctest.testmod()
+    

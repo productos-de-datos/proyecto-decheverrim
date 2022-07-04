@@ -3,53 +3,48 @@ Clean and transform the files to consolidate them and later process them
 """
 
 def clean_data():
-    """Realice la limpieza y transformación de los Files CSV.
+    """Realice la limpieza y transformación de los archivos CSV.
 
-    Usando los Files data_lake/raw/*.csv, cree el file data_lake/cleansed/precios-horarios.csv.
-    Las columnas de este file son:
+    Usando los archivos data_lake/raw/*.csv, cree el archivo data_lake/cleansed/precios-horarios.csv.
+    Las columnas de este archivo son:
 
     * fecha: fecha en formato YYYY-MM-DD
     * hora: hora en formato HH
     * precio: precio de la electricidad en la bolsa nacional
 
-    Este file contiene toda la información del 1997 a 2021.
-
-
+    Este archivo contiene toda la información del 1997 a 2021.
     """
     import pandas as pd
+    import glob
+    import numpy as np
 
-    cleansed_df = []
+    ruta=glob.glob(r'data_lake/raw/*.csv')
 
-    for year in range(1995, 2022):
-        df_read = pd.read_csv(
-            "data_lake/raw/{}.csv".format(year),
-        )
-        cleansed_df.append(df_read)
+    lista=[]
 
-    frame = pd.concat(cleansed_df, axis=0, ignore_index=True)
-    old_columns = frame.columns
-    new_columns = ["fecha"] + ["{0:0=2d}".format(int(i)) for i in old_columns[1:]]
-    frame.columns = new_columns
-
-    frame["fecha"] = pd.to_datetime(frame["fecha"], format="%Y-%m-%d")
-    unpivoted_table = frame.melt(
-        id_vars=["fecha"],
-        value_vars=new_columns[1:],
-        var_name="hora",
-        value_name="precio",
-    )
-    unpivoted_table["precio"] = unpivoted_table["precio"].fillna(
-        unpivoted_table.groupby("fecha")["precio"].transform("mean")
-    )
-    unpivoted_table.to_csv(
-        "data_lake/cleansed/precios-horarios.csv", encoding="utf-8", index=False
-    )
+    for archivo in ruta:
+        df=pd.read_csv(archivo,index_col=None,header=0)
+        lista.append(df)
     
+    archivo_completo=pd.concat(lista,axis=0,ignore_index=True)
 
+    archivo_completo=archivo_completo[archivo_completo["Fecha"].notnull()]
+    archivo_completo=pd.melt(archivo_completo,id_vars=['Fecha'],var_name='hora', value_name='precio')
+    archivo_completo['hora']=np.where(pd.to_numeric(archivo_completo['hora']) <= 9,pd.concat(["0"+archivo_completo['hora']]),archivo_completo['hora'])
+    archivo_completo["Fecha"] = pd.to_datetime(archivo_completo["Fecha"]).dt.strftime('%Y-%m-%d')
+    date1="2017-01-01"
+    date2 = "2021-12-31"
+    month_list = [i.strftime('%Y-%m-%d') for i in pd.date_range(start=date1, end=date2)]
+    archivo_completo=archivo_completo[archivo_completo.Fecha.isin(month_list)]
+    archivo_completo=archivo_completo.rename(columns={"Fecha":"fecha"})
+    archivo_completo.to_csv("data_lake/cleansed/precios-horarios.csv",index=False, header=True)
+
+    return
+
+    raise NotImplementedError("Implementar esta función")
 
 
 if __name__ == "__main__":
     import doctest
     clean_data()
-
     doctest.testmod()
