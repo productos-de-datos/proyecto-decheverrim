@@ -4,6 +4,9 @@ Data ingestion module from the external repository
 """
 
 
+import os
+import urllib.request
+
 def ingest_data():
     """Ingeste los datos externos a la capa landing del data lake.
 
@@ -12,20 +15,22 @@ def ingest_data():
     descarga debe realizarse usando únicamente funciones de Python.
 
     """
-    
-    import requests
 
-    for num in range(1995, 2022):
-        if num in range(2016, 2018):
-            url = 'https://github.com/jdvelasq/datalabs/blob/master/datasets/precio_bolsa_nacional/xls/{}.xls?raw=true'.format(num)
-            file = requests.get(url, allow_redirects=True)
-            open('data_lake/landing/{}.xls'.format(num), 'wb').write(file.content)
-        else:
-            url = 'https://github.com/jdvelasq/datalabs/blob/master/datasets/precio_bolsa_nacional/xls/{}.xlsx?raw=true'.format(num)
-            file = requests.get(url, allow_redirects=True)
-            open('data_lake/landing/{}.xlsx'.format(num), 'wb').write(file.content)
-    return
-    raise NotImplementedError("Implementar esta función")
+    parent_dir = "data_lake"
+
+    if os.path.isdir(parent_dir) and os.path.isdir(parent_dir+"/landing" ):
+        os.chdir(parent_dir + "/landing")
+        for year in range(1995,2022):
+            url = 'https://github.com/jdvelasq/datalabs/blob/master/datasets/precio_bolsa_nacional/xls/'
+            if year not in (2016, 2017):
+                url = url + str(year)+'.xlsx?raw=true'
+                urllib.request.urlretrieve(url, str(year) + ".xlsx")
+            else :
+                url = url + str(year)+'.xls?raw=true'
+                urllib.request.urlretrieve(url, str(year) + ".xls")
+    else:
+        print("There is not landing directory!")
+
 
 if __name__ == "__main__":
     import doctest

@@ -13,75 +13,83 @@ En luigi llame las funciones que ya creo.
 """
 
 import luigi
-from luigi import Task, LocalTarget
+from create_data_lake import create_data_lake
+from ingest_data import ingest_data
+from transform_data import transform_data
+from clean_data import clean_data
+from compute_daily_prices import compute_daily_prices
+from compute_monthly_prices import compute_monthly_prices
 
-class ingestdata(Task):
-
+class CreateStructure(luigi.Task):
+    """
+    Ejecuta la tarea de crear la estructura
+    """
     def output(self):
-        return LocalTarget('data_lake/landing/archivo.txt')
+        return []
 
     def run(self):
-        from ingest_data import ingest_data
-        with self.output().open("w") as outfile:
-            ingest_data()
+        create_data_lake()
 
-class transformdata(Task):
-
-    def requires(self):
-        return ingestdata()
-    
+class IngestData(luigi.Task):
+    """
+    Ejecuta la tarea de recuperar la data desde un archivo externo
+    """
     def output(self):
-        return LocalTarget('data_lake/raw/archivo.txt')
+        return []
 
     def run(self):
-        from transform_data import transform_data
-        with self.output().open("w") as outfile:
-            transform_data()
+        ingest_data()
 
-class cleandata(Task):
-    
-    def requires(self):
-        return transformdata()
-    
+class TransformData(luigi.Task):
+    """
+    Ejecuta la tarea de transformar la data
+    y consolidarla en un unico archivo
+    """
     def output(self):
-        return LocalTarget('data_lake/cleansed/archivo.txt')
+        return []
 
     def run(self):
-        from clean_data import clean_data
-        with self.output().open("w") as outfile:
-            clean_data()
+        transform_data()
 
-class computedailyprices(Task):
-    
-    def requires(self):
-        return cleandata()
-    
+class CleanData(luigi.Task):
+    """
+    Ejecuta la tarea de limpiar la data y
+    dar una estrucutra adecuada
+    """
     def output(self):
-        return LocalTarget('data_lake/business/archivo.txt')
+        return []
 
     def run(self):
-        from compute_daily_prices import compute_daily_prices
-        with self.output().open("w") as outfile:
-            compute_daily_prices()
+        clean_data()
 
-class computemonthlyprices(Task):
-    
-    def requires(self):
-        return computedailyprices()
-    
+class ComputeDailyPrices(luigi.Task):
+    """
+    Ejecuta la tarea de consolidar los precios a nivel diario
+    """
     def output(self):
-        return LocalTarget('data_lake/business/archivo1.txt')
+        return []
 
     def run(self):
-        from compute_monthly_prices import compute_monthly_prices
-        with self.output().open("w") as outfile:
-            compute_monthly_prices()
+        compute_daily_prices()
 
-if __name__ == "__main__":
-    luigi.run(["computemonthlyprices", "--local-scheduler"])
-    #raise NotImplementedError("Implementar esta función")
+class ComputeMonthlyPrices(luigi.Task):
+    """
+    Ejecuta la tarea de consolidar los precios a nivel mensual
+    """
+    def output(self):
+        return []
+
+    def run(self):
+        compute_monthly_prices()
+
+
+def pipeline():
+    """
+        llama al pipeline
+    """
+    luigi.build([CreateStructure(), IngestData(), TransformData(), CleanData(), ComputeDailyPrices(), ComputeMonthlyPrices() ],  local_scheduler=True)
 
 if __name__ == "__main__":
     import doctest
-
+    pipeline()
     doctest.testmod()

@@ -2,6 +2,7 @@
 Create a file with the average prices consolidated per month
 """
 
+import pandas as pd
 def compute_monthly_prices():
     """Compute los precios promedios mensuales.
 
@@ -12,25 +13,21 @@ def compute_monthly_prices():
     * fecha: fecha en formato YYYY-MM-DD
 
     * precio: precio promedio mensual de la electricidad en la bolsa nacional
-
-    
-
     """
-    import pandas as pd
+    route_try = True
+    try:
+        df_completed = pd.read_csv("./data_lake/cleansed/precios-horarios.csv")
+    except FileNotFoundError:
+        route_try = False
+        df_completed = pd.read_csv("../../data_lake/cleansed/precios-horarios.csv")
+    df_completed["year-month"] = df_completed["fecha"].map(lambda x: str(x)[0:7])
 
-    df = pd.read_csv("data_lake/cleansed/precios-horarios.csv",index_col=None,header=0)
-    df["anio-mes"]=pd.to_datetime(df["fecha"]).dt.strftime('%Y-%m')
-    preciosmensuales =  df[["anio-mes", "precio"]]
-    preciosmensuales = preciosmensuales.groupby("anio-mes", as_index=False)["precio"].mean()
-    preciosmensuales = preciosmensuales.rename(columns={"anio-mes":"fecha"})
-    preciosmensuales["fecha"]=pd.to_datetime(preciosmensuales["fecha"]).dt.strftime('%Y-%m-%d')
-  
-    preciosmensuales.to_csv("data_lake/business/precios-mensuales.csv",index=None, header=True)
-    
-    
-    return
-    raise NotImplementedError("Implementar esta función")
-
+    df_completed = df_completed.groupby('year-month', as_index=False).mean()
+    df_completed = df_completed[['year-month','precio']]
+    df_completed = df_completed.rename(columns= {'year-month': 'fecha'})
+    df_completed["fecha"] =  df_completed["fecha"].map(lambda x: x + str("-01"))
+    route = "./data_lake/business/precios-mensuales.csv" if route_try else "../../data_lake/business/precios-mensuales.csv"
+    df_completed.to_csv(route, index=False)
 
 if __name__ == "__main__":
     import doctest
