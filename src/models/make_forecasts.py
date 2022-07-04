@@ -1,3 +1,8 @@
+"""
+Predict electricity prices according to days
+
+"""
+
 def make_forecasts():
     """Construya los pronosticos con el modelo entrenado final.
 

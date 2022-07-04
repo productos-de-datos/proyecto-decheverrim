@@ -1,3 +1,7 @@
+"""
+Create a file with the average prices consolidated per day
+"""
+
 def compute_daily_prices():
     """Compute los precios promedios diarios.
     >>> compute_daily_prices()

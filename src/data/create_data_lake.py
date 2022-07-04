@@ -1,4 +1,7 @@
-import os
+"""
+Create the Data_lake folder and its subfolders with the OS library
+
+"""
 def create_data_lake():
     
     """Cree el data lake con sus capas.
@@ -22,6 +25,7 @@ def create_data_lake():
     ```
  
     """
+    import os
     #Create the parent directory in the root of the proyect
     parent_directory = "data_lake"
     cwd = os.getcwd()

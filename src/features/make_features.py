@@ -1,3 +1,8 @@
+"""
+Create new features to predict the daily price of electricity.
+
+"""
+
 def make_features():
     """Prepara datos para pronóstico.
 

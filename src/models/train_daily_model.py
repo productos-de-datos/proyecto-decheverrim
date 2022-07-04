@@ -1,3 +1,8 @@
+"""
+Train the model for forecasting
+
+"""
+
 def train_daily_model():
     """Entrena el modelo de pronóstico de precios diarios.
 

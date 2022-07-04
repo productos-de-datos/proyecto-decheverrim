@@ -1,6 +1,5 @@
 """
-Módulo de ingestión de datos.
--------------------------------------------------------------------------------
+Data ingestion module from the external repository
 
 """
 

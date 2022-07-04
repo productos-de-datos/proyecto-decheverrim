@@ -1,3 +1,7 @@
+"""
+Create a file with the average prices consolidated per month
+"""
+
 def compute_monthly_prices():
     """Compute los precios promedios mensuales.
     >>> compute_monthly_prices()
