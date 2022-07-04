@@ -13,29 +13,34 @@ def clean_data():
 
     """
     import pandas as pd
-    dict_hours = {'0': '00', '1':'01', '2':'02', '3':'03',
-     '4': '04', '5':'05', '6':'06', '7':'07', '8':'08', '9': '09'}
-    try:
-        df_completed = pd.read_csv("./data_lake/raw/1995.csv")
-    except FileNotFoundError:
-        df_completed = pd.read_csv("../../data_lake/raw/1995.csv")
 
-    df_completed = df_completed.rename(columns=dict_hours)
-    df_completed = pd.melt(df_completed, id_vars= ["Fecha"], value_vars = [str(hour) if hour >=10  else '0'+ str(hour) for hour in range(0,24)])
-    for i in range(1996,2022):
-        route_try = True
-        try:
-            df_to_clear = pd.read_csv("./data_lake/raw/" + str(i) + ".csv")
-        except FileNotFoundError:
-            route_try = False
-            df_to_clear = pd.read_csv("../../data_lake/raw/" + str(i) + ".csv")
-        df_to_clear = df_to_clear.rename(columns=dict_hours)
-        df_to_clear = pd.melt(df_to_clear, id_vars= ["Fecha"], value_vars = [str(hour) if hour >=10  else '0'+ str(hour) for hour in range(0,24)])
-        df_completed = pd.concat([df_completed,df_to_clear])
+    cleansed_df = []
 
-    df_completed =  df_completed.rename(columns={"Fecha": "fecha", "variable": "hora", "value": "precio"})
-    route = "./data_lake/cleansed/precios-horarios.csv" if route_try else "../../data_lake/cleansed/precios-horarios.csv"
-    df_completed.to_csv(route, index=False)
+    for year in range(1995, 2022):
+        df_read = pd.read_csv(
+            "data_lake/raw/{}.csv".format(year),
+        )
+        cleansed_df.append(df_read)
+
+    frame = pd.concat(cleansed_df, axis=0, ignore_index=True)
+    old_columns = frame.columns
+    new_columns = ["fecha"] + ["{0:0=2d}".format(int(i)) for i in old_columns[1:]]
+    frame.columns = new_columns
+
+    frame["fecha"] = pd.to_datetime(frame["fecha"], format="%Y-%m-%d")
+    unpivoted_table = frame.melt(
+        id_vars=["fecha"],
+        value_vars=new_columns[1:],
+        var_name="hora",
+        value_name="precio",
+    )
+    unpivoted_table["precio"] = unpivoted_table["precio"].fillna(
+        unpivoted_table.groupby("fecha")["precio"].transform("mean")
+    )
+    unpivoted_table.to_csv(
+        "data_lake/cleansed/precios-horarios.csv", encoding="utf-8", index=False
+    )
+    
 
 
 
