@@ -41,7 +41,7 @@ def make_forecasts():
     clf.fit(X_train,y_train)
 
     #Realiza el Forecast 
-    pickled_model = pickle.load(open('proyecto-decheverrim/src/models/precios-diarios.pickle', 'rb'))
+    pickled_model = pickle.load(open('src/models/precios-diarios.pickle', 'rb'))
     ypred=pickled_model.predict(X_test)
 
     X_test=pd.DataFrame(X_test, columns = ['fecha'])

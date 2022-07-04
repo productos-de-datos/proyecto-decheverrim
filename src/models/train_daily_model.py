@@ -33,7 +33,7 @@ def train_daily_model():
     
     clf.fit(X_train,y_train)
 
-    pickle.dump(clf, open('proyecto-decheverrim/src/models/precios-diarios.pickle', 'wb'))
+    pickle.dump(clf, open('src/models/precios-diarios.pickle', 'wb'))
 
 
 if __name__ == "__main__":
