@@ -19,6 +19,16 @@ from clean_data import clean_data
 from compute_daily_prices import compute_daily_prices
 from compute_monthly_prices import compute_monthly_prices
 
+class CreateStructure(luigi.Task):
+    """
+    Ejecuta la tarea de crear la estructura
+    """
+    def output(self):
+        return []
+
+    def run(self):
+        create_data_lake()
+
 class IngestData(luigi.Task):
     """
     Run the task to retrieve data from an external file
@@ -75,7 +85,7 @@ def pipeline():
     """
     Call pipeline
     """
-    luigi.build([IngestData(), TransformData(), CleanData(), ComputeDailyPrices(), ComputeMonthlyPrices() ],  local_scheduler=True)
+    luigi.build([CreateStructure(),IngestData(), TransformData(), CleanData(), ComputeDailyPrices(), ComputeMonthlyPrices() ],  local_scheduler=True)
 
 
 if __name__ == "__main__":
