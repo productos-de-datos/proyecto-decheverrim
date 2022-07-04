@@ -12,10 +12,24 @@ def make_features():
     analizar y determinar las variables explicativas del modelo.
 
     """
-    raise NotImplementedError("Implementar esta función")
+    import pandas as pd
+    from holidays_co import is_holiday_date
+
+    data_to_predict = pd.read_csv("./data_lake/business/precios-diarios.csv")
+    data_to_predict["fecha"] = pd.to_datetime(data_to_predict["fecha"])
+    data_to_predict["year"] = data_to_predict["fecha"].dt.year
+    data_to_predict["month"] = data_to_predict["fecha"].dt.month
+    data_to_predict["day"] = data_to_predict["fecha"].dt.day
+    data_to_predict["day_of_week"] = data_to_predict["fecha"].dt.dayofweek
+    data_to_predict["holiday"] = data_to_predict["fecha"].map(lambda x: 1 if is_holiday_date(x) else 0)
+    data_to_predict["weekend"] = data_to_predict["fecha"].map(lambda x:  len(pd.bdate_range(x,x)))
+
+    data_to_predict.to_csv("./data_lake/business/features/precios_diarios.csv", index=False)
+
 
 
 if __name__ == "__main__":
     import doctest
+    make_features()
 
     doctest.testmod()
