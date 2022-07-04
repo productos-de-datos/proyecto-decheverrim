@@ -19,16 +19,14 @@ def compute_daily_prices():
     """
     import pandas as pd
 
-    Price_Schedule_Cleansed = pd.read_csv("data_lake/cleansed/precios-horarios.csv",index_col=None,header=0)
-    Price_Schedule_Cleansed =  Price_Schedule_Cleansed[["fecha", "precio"]]
-    Dialy_prices = Price_Schedule_Cleansed.groupby("fecha").mean({"precio"})
-    Price_Schedule_Cleansed.to_csv("data_lake/business/precios-diarios.csv",index=None, header=True)
     
-    print(Price_Schedule_Cleansed.head())
-    return
-
-
-    raise NotImplementedError("Implementar esta función")
+    Path_source = "./data_lake/cleansed/precios-horarios.csv"
+    Data_cleansed = pd.read_csv(Path_source)
+    Data_cleansed = Data_cleansed.groupby('fecha', as_index=False).mean()
+    Data_cleansed = Data_cleansed[['fecha','precio']]
+    Path_destiny = "./data_lake/business/precios-diarios.csv"
+    Data_cleansed.to_csv(Path_destiny, index=False)
+    print(Data_cleansed.head())
 
 
 if __name__ == "__main__":
