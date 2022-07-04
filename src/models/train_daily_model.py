@@ -26,18 +26,18 @@ def train_daily_model():
     target = data_to_train["precio"].array
     regressors = data_to_train.drop(columns=["precio"])
     x_train, x_rem, y_true_train, y_rem = train_test_split(
-        regressors, target, test_size=0.3, random_state=603)
+        regressors, target, test_size=0.25, random_state=500)
 
     x_valid, x_test, y_valid, y_true_test = train_test_split(x_rem,
                                                              y_rem,
-                                                             test_size=0.5, random_state=603)
+                                                             test_size=0.5, random_state=500)
 
     x_test["y"] = y_true_test
     x_test.to_csv('src/models/dataToForecast.csv')
 
-    model = MLPRegressor(max_iter= 100,
+    model = MLPRegressor(max_iter= 200,
         activation='identity',
-        solver= 'adam',
+        solver= 'sgd',
         learning_rate_init= 0.001)
     model = MLPRegressor()
 

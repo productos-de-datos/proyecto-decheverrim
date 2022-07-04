@@ -1,7 +1,7 @@
 """
 Clean and transform the files to consolidate them and later process them
 """
-
+import pandas as pd
 def clean_data():
     """Realice la limpieza y transformación de los archivos CSV.
 
