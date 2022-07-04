@@ -23,11 +23,16 @@ def compute_daily_prices():
 
     """
 
-    df_completed = pd.read_csv("./data_lake/cleansed/precios-horarios.csv")
+    route_try = True
+    try:
+        df_completed = pd.read_csv("./data_lake/cleansed/precios-horarios.csv")
+    except FileNotFoundError:
+        route_try = False
+        df_completed = pd.read_csv("../../data_lake/cleansed/precios-horarios.csv")
 
     df_completed = df_completed.groupby('fecha', as_index=False).mean()
     df_completed = df_completed[['fecha','precio']]
-    route = "./data_lake/business/precios-diarios.csv"
+    route = "./data_lake/business/precios-diarios.csv" if route_try else "../../data_lake/business/precios-diarios.csv"
     df_completed.to_csv(route, index=False)
     print(df_completed.head())
 

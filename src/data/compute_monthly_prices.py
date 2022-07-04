@@ -22,9 +22,13 @@ def compute_monthly_prices():
     * precio: precio promedio mensual de la electricidad en la bolsa nacional
     """
 
-
-    df_completed = pd.read_csv("./data_lake/cleansed/precios-horarios.csv")
-
+    route_try = True
+    try:
+        df_completed = pd.read_csv("./data_lake/cleansed/precios-horarios.csv")
+    except FileNotFoundError:
+        route_try = False
+        df_completed = pd.read_csv("../../data_lake/cleansed/precios-horarios.csv")
+    
     df_completed["year-month"] = df_completed["fecha"].map(lambda x: str(x)[0:7])
 
     df_completed = df_completed.groupby('year-month', as_index=False).mean()
