@@ -1,7 +1,7 @@
 def clean_data():
-    """Realice la limpieza y transformación de los archivos CSV.
+    """Realice la limpieza y transformación de los Files CSV.
 
-    Usando los archivos data_lake/raw/*.csv, cree el file data_lake/cleansed/precios-horarios.csv.
+    Usando los Files data_lake/raw/*.csv, cree el file data_lake/cleansed/precios-horarios.csv.
     Las columnas de este file son:
 
     * fecha: fecha en formato YYYY-MM-DD
@@ -13,34 +13,29 @@ def clean_data():
 
     """
     import pandas as pd
-    import glob
-    import numpy as np
+    dict_hours = {'0': '00', '1':'01', '2':'02', '3':'03',
+     '4': '04', '5':'05', '6':'06', '7':'07', '8':'08', '9': '09'}
+    try:
+        df_completed = pd.read_csv("./data_lake/raw/1995.csv")
+    except FileNotFoundError:
+        df_completed = pd.read_csv("../../data_lake/raw/1995.csv")
 
-    Path = glob.glob(r'data_lake/raw/*.csv')
+    df_completed = df_completed.rename(columns=dict_hours)
+    df_completed = pd.melt(df_completed, id_vars= ["Fecha"], value_vars = [str(hour) if hour >=10  else '0'+ str(hour) for hour in range(0,24)])
+    for i in range(1996,2022):
+        route_try = True
+        try:
+            df_to_clear = pd.read_csv("./data_lake/raw/" + str(i) + ".csv")
+        except FileNotFoundError:
+            route_try = False
+            df_to_clear = pd.read_csv("../../data_lake/raw/" + str(i) + ".csv")
+        df_to_clear = df_to_clear.rename(columns=dict_hours)
+        df_to_clear = pd.melt(df_to_clear, id_vars= ["Fecha"], value_vars = [str(hour) if hour >=10  else '0'+ str(hour) for hour in range(0,24)])
+        df_completed = pd.concat([df_completed,df_to_clear])
 
-    list_=[]
-
-    for file in Path : 
-        df=pd.read_csv(file,index_col=None,header=0)
-        list_.append(df)
-    
-    file_full=pd.concat(list_,axis=0,ignore_index=True)
-
-    file_full=file_full[file_full["Fecha"].notnull()]
-    file_full=pd.melt(file_full,id_vars=['Fecha'],var_name='hora', value_name='precio')
-    file_full['hora']=np.where(pd.to_numeric(file_full['hora']) <= 9,pd.concat(["0"+file_full['hora']]),file_full['hora'])
-    file_full["Fecha"] = pd.to_datetime(file_full["Fecha"]).dt.strftime('%Y-%m-%d')
-    date1="2017-01-01"
-    date2 = "2021-12-31"
-    month_list = [i.strftime('%Y-%m-%d') for i in pd.date_range(start=date1, end=date2)]
-    file_full=file_full[file_full.Fecha.isin(month_list)]
-    file_full=file_full.rename(columns={"Fecha":"fecha"})
-    file_full.to_csv("data_lake/cleansed/precios-horarios.csv",index=False, header=True)
-
-    return
-
-    raise NotImplementedError("Implementar esta función")
-
+    df_completed =  df_completed.rename(columns={"Fecha": "fecha", "variable": "hora", "value": "precio"})
+    route = "./data_lake/cleansed/precios-horarios.csv" if route_try else "../../data_lake/cleansed/precios-horarios.csv"
+    df_completed.to_csv(route, index=False)
 
 
 
