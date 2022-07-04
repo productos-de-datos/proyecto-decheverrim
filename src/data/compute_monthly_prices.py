@@ -35,7 +35,7 @@ def compute_monthly_prices():
     df_completed = df_completed[['year-month','precio']]
     df_completed = df_completed.rename(columns= {'year-month': 'fecha'})
     df_completed["fecha"] =  df_completed["fecha"].map(lambda x: x + str("-01"))
-    route = "./data_lake/business/precios-mensuales.csv"
+    route = "./data_lake/business/precios-mensuales.csv" if route_try else "../../data_lake/business/precios-mensuales.csv"
     df_completed.to_csv(route, index=False)
     print(df_completed.head())
 
